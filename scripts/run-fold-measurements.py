@@ -40,61 +40,77 @@ TODAY = "2026-05-14"
 
 # ─── W1: Gentner SMT re-score ─────────────────────────────────────────
 
+def _hal_proposal() -> MappingProposal:
+    return MappingProposal(
+        source_domain="DONNA Intent Dispatch (5 MCP tools)",
+        target_domain="HAL.md route() Python operator",
+        source_elements=["donna_analyse", "donna_draft", "donna_review", "donna_export", "donna_sign"],
+        target_elements=["keyword_match", "provider_chain", "param_binding", "default_dispatch"],
+        relations=[
+            MappingRelation("donna_analyse", "keyword_match", "causal", "ROUTING_TABLE entry"),
+            MappingRelation("donna_draft", "keyword_match", "causal", "ROUTING_TABLE entry"),
+            MappingRelation("donna_review", "keyword_match", "causal", "ROUTING_TABLE entry"),
+            MappingRelation("donna_export", "keyword_match", "causal", "ROUTING_TABLE entry"),
+            MappingRelation("donna_sign", "keyword_match", "causal", "ROUTING_TABLE entry"),
+            MappingRelation("donna_analyse", "provider_chain", "causal", "Analytical tools chain"),
+            MappingRelation("donna_export", "provider_chain", "causal", "Export tool chain"),
+            MappingRelation("donna_sign", "default_dispatch", "causal", "Unmatched intent default"),
+        ],
+    )
+
+
+def _grip_proposal() -> MappingProposal:
+    return MappingProposal(
+        source_domain="DONNA Substrate Primitives",
+        target_domain="GRIP.md causal command dispatch",
+        source_elements=["idr_sign", "intent_route", "chain_verify", "kernel_compose"],
+        target_elements=["notarise_cmd", "route_cmd", "verify_chain_cmd", "run_cmd"],
+        relations=[
+            MappingRelation("idr_sign", "notarise_cmd", "causal", "exec bin/notarise"),
+            MappingRelation("intent_route", "route_cmd", "causal", "delegates to HAL.md route"),
+            MappingRelation("chain_verify", "verify_chain_cmd", "causal", "delegates to happi.md selftest"),
+            MappingRelation("kernel_compose", "run_cmd", "causal", "route+sign+verify pipeline"),
+        ],
+    )
+
+
+def _happi_proposal() -> MappingProposal:
+    return MappingProposal(
+        source_domain="happi/1.1 IDR Audit-Chain Protocol",
+        target_domain="happi.md embedded Python operators",
+        source_elements=["canonical_payload_spec", "sha256_chain_spec", "hmac_sign_spec", "chain_verify_spec"],
+        target_elements=["canonical_payload_fn", "record_hash_fn", "sign_record_fn", "verify_chain_fn"],
+        relations=[
+            MappingRelation("canonical_payload_spec", "canonical_payload_fn", "causal", "sort_keys + fixed separators"),
+            MappingRelation("sha256_chain_spec", "record_hash_fn", "causal", "sha256 of canonical payload"),
+            MappingRelation("hmac_sign_spec", "sign_record_fn", "causal", "HMAC-SHA256 byte-compatible"),
+            MappingRelation("chain_verify_spec", "verify_chain_fn", "causal", "end-to-end verification"),
+        ],
+    )
+
+
+def _context_proposal() -> MappingProposal:
+    return MappingProposal(
+        source_domain="DONNA Operator State Contract",
+        target_domain="context.md schema sections",
+        source_elements=["firm_identity", "signer_identity", "matter_config", "provider_preferences"],
+        target_elements=["firm_section", "signer_section", "matter_section", "providers_section"],
+        relations=[
+            MappingRelation("firm_identity", "firm_section", "causal", "firm contract + verify-regex"),
+            MappingRelation("signer_identity", "signer_section", "causal", "signer contract + keychain-ref"),
+            MappingRelation("matter_config", "matter_section", "causal", "matter shape contract"),
+            MappingRelation("provider_preferences", "providers_section", "causal", "provider preference string"),
+        ],
+    )
+
+
 def build_proposals() -> dict[str, MappingProposal]:
     """Build the four MappingProposal objects, one per polyglot."""
     return {
-        "HAL.md": MappingProposal(
-            source_domain="DONNA Intent Dispatch (5 MCP tools)",
-            target_domain="HAL.md route() Python operator",
-            source_elements=["donna_analyse", "donna_draft", "donna_review", "donna_export", "donna_sign"],
-            target_elements=["keyword_match", "provider_chain", "param_binding", "default_dispatch"],
-            relations=[
-                MappingRelation("donna_analyse", "keyword_match", "causal", "ROUTING_TABLE entry maps analyse/analyze keywords to tool"),
-                MappingRelation("donna_draft", "keyword_match", "causal", "ROUTING_TABLE entry maps draft/write keywords to tool"),
-                MappingRelation("donna_review", "keyword_match", "causal", "ROUTING_TABLE entry maps redline/review keywords to tool"),
-                MappingRelation("donna_export", "keyword_match", "causal", "ROUTING_TABLE entry maps export/regulator keywords to tool"),
-                MappingRelation("donna_sign", "keyword_match", "causal", "ROUTING_TABLE entry maps sign/notarise keywords to tool"),
-                MappingRelation("donna_analyse", "provider_chain", "causal", "Analytical tools route to claude>gemini>self-host chain"),
-                MappingRelation("donna_export", "provider_chain", "causal", "Export tool routes to local provider chain"),
-                MappingRelation("donna_sign", "default_dispatch", "causal", "Unmatched intent defaults to donna_sign (every delegation is decision-worthy)"),
-            ],
-        ),
-        "GRIP.md": MappingProposal(
-            source_domain="DONNA Substrate Primitives",
-            target_domain="GRIP.md causal command dispatch",
-            source_elements=["idr_sign", "intent_route", "chain_verify", "kernel_compose"],
-            target_elements=["notarise_cmd", "route_cmd", "verify_chain_cmd", "run_cmd"],
-            relations=[
-                MappingRelation("idr_sign", "notarise_cmd", "causal", "notarise command execs bin/notarise — preserves IDR signing semantics byte-for-byte"),
-                MappingRelation("intent_route", "route_cmd", "causal", "route command delegates to HAL.md route operator via bash subprocess"),
-                MappingRelation("chain_verify", "verify_chain_cmd", "causal", "verify-chain delegates to happi.md selftest — exercises inline operators"),
-                MappingRelation("kernel_compose", "run_cmd", "causal", "run command composes route→sign→verify pipeline end-to-end with kernel_composed boolean"),
-            ],
-        ),
-        "happi.md": MappingProposal(
-            source_domain="happi/1.1 IDR Audit-Chain Protocol",
-            target_domain="happi.md embedded Python operators",
-            source_elements=["canonical_payload_spec", "sha256_chain_spec", "hmac_sign_spec", "chain_verify_spec"],
-            target_elements=["canonical_payload_fn", "record_hash_fn", "sign_record_fn", "verify_chain_fn"],
-            relations=[
-                MappingRelation("canonical_payload_spec", "canonical_payload_fn", "causal", "Stable JSON serialisation (sort_keys + fixed separators) implemented as Python function — byte-deterministic"),
-                MappingRelation("sha256_chain_spec", "record_hash_fn", "causal", "sha256 of canonical payload as chain link — implemented in record_hash, matches bin/notarise"),
-                MappingRelation("hmac_sign_spec", "sign_record_fn", "causal", "HMAC-SHA256 sign of canonical payload — implemented in sign_record, conformance test asserts byte-parity with bin/notarise"),
-                MappingRelation("chain_verify_spec", "verify_chain_fn", "causal", "End-to-end verification with per-record failures + chain-link integrity — implemented in verify_chain"),
-            ],
-        ),
-        "context.md": MappingProposal(
-            source_domain="DONNA Operator State Contract",
-            target_domain="context.md schema sections",
-            source_elements=["firm_identity", "signer_identity", "matter_config", "provider_preferences"],
-            target_elements=["firm_section", "signer_section", "matter_section", "providers_section"],
-            relations=[
-                MappingRelation("firm_identity", "firm_section", "causal", "Firm name/jurisdiction/bar_number contract documented; verify-regex prevents plaintext PII"),
-                MappingRelation("signer_identity", "signer_section", "causal", "Signer name/role/signature/keychain-ref contract; verify-regex prevents plaintext tokens"),
-                MappingRelation("matter_config", "matter_section", "causal", "Matter default_path/archive_after/privilege_default contract — explicit per-matter shape"),
-                MappingRelation("provider_preferences", "providers_section", "causal", "Provider preference order contract — typed preference string per surface"),
-            ],
-        ),
+        "HAL.md": _hal_proposal(),
+        "GRIP.md": _grip_proposal(),
+        "happi.md": _happi_proposal(),
+        "context.md": _context_proposal(),
     }
 
 
@@ -167,55 +183,77 @@ def capture_w2_baseline() -> list[dict]:
 
 # ─── W3: Folded-path equivalence ──────────────────────────────────────
 
+def _hal_route(intent: str, env: dict) -> dict:
+    r = subprocess.run(
+        ["bash", str(REPO / "HAL.md"), "route", intent],
+        capture_output=True, text=True, env=env, timeout=10,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(f"HAL.md route failed: {r.stderr}")
+    return json.loads(r.stdout)
+
+
+def _build_folded_entry(entry: dict, previous_hash: str, routing: dict, record_hash: str, record: dict) -> dict:
+    return {
+        "id": entry["id"],
+        "primitive": entry["primitive"],
+        "measurement_kind": "folded_path",
+        "routing_tool": routing["tool"],
+        "routing_provider": routing["provider"],
+        "previous_hash": previous_hash,
+        "record_hash": record_hash,
+        "signature": record["signature"],
+        "timestamp_wall_clock": record["timestamp"],
+        "decision_id": record["decision_id"],
+        "captured_at": TODAY,
+    }
+
+
 def capture_w3_folded() -> list[dict]:
     """For each delegation: HAL.md route, bin/notarise sign, capture sigs."""
     corpus = json.loads((REPO / "data" / "delegations.json").read_text(encoding="utf-8"))
     env = os.environ.copy()
     env["DONNA_NOTARISE_KEY"] = DEMO_KEY
-    captured = []
+    captured: list[dict] = []
     previous_hash = GENESIS
     for entry in corpus["delegations"]:
-        # Route via HAL.md
-        r = subprocess.run(
-            ["bash", str(REPO / "HAL.md"), "route", entry["intent"]],
-            capture_output=True, text=True, env=env, timeout=10,
-        )
-        if r.returncode != 0:
-            raise RuntimeError(f"HAL.md route failed for {entry['id']}: {r.stderr}")
-        routing_decision = json.loads(r.stdout)
-        # Sign via bin/notarise (the folded path's sign is the same primitive)
-        r = subprocess.run(
-            [str(REPO / "bin" / "notarise"), "sign",
-             "--intent", entry["intent"],
-             "--signer", "donna-bot",
-             "--confidence", "0.92",
-             "--previous-hash", previous_hash,
-             "--decision-id", f"fold-{entry['id']}-2026-05"],
-            capture_output=True, text=True, env=env, timeout=10,
-        )
-        if r.returncode != 0:
-            raise RuntimeError(f"sign failed for {entry['id']}: {r.stderr}")
-        record = json.loads(r.stdout)
-        record_hash = ""
-        for line in r.stderr.splitlines():
-            if line.startswith("hash:"):
-                record_hash = line.split(":", 1)[1].strip()
-                break
-        captured.append({
-            "id": entry["id"],
-            "primitive": entry["primitive"],
-            "measurement_kind": "folded_path",
-            "routing_tool": routing_decision["tool"],
-            "routing_provider": routing_decision["provider"],
-            "previous_hash": previous_hash,
-            "record_hash": record_hash,
-            "signature": record["signature"],
-            "timestamp_wall_clock": record["timestamp"],
-            "decision_id": record["decision_id"],
-            "captured_at": TODAY,
-        })
+        routing = _hal_route(entry["intent"], env)
+        result = _sign_entry(entry, previous_hash, env)
+        if result.returncode != 0:
+            raise RuntimeError(f"sign failed for {entry['id']}: {result.stderr}")
+        parsed = _parse_sign_output(entry["id"], result.stdout, result.stderr)
+        if parsed is None:
+            raise RuntimeError(f"could not parse output for {entry['id']}")
+        record_hash, record = parsed
+        captured.append(_build_folded_entry(entry, previous_hash, routing, record_hash, record))
         previous_hash = record_hash
     return captured
+
+
+def _sign_entry(entry: dict, previous_hash: str, env: dict) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [str(REPO / "bin" / "notarise"), "sign",
+         "--intent", entry["intent"],
+         "--signer", "donna-bot",
+         "--confidence", "0.92",
+         "--previous-hash", previous_hash,
+         "--decision-id", f"fold-{entry['id']}-2026-05"],
+        capture_output=True, text=True, env=env, timeout=10,
+    )
+
+
+def _parse_sign_output(entry_id: str, stdout: str, stderr: str) -> tuple[str, dict] | None:
+    record_hash = ""
+    for line in stderr.splitlines():
+        if line.startswith("hash:"):
+            record_hash = line.split(":", 1)[1].strip()
+            break
+    if not record_hash:
+        return None
+    try:
+        return record_hash, json.loads(stdout)
+    except json.JSONDecodeError:
+        return None
 
 
 # ─── W4: H479 cold-start ──────────────────────────────────────────────
@@ -245,17 +283,20 @@ def measure_w4_cold_start() -> dict:
 # ─── W5: H482 load-bearing file reduction ─────────────────────────────
 
 def count_load_bearing(root: Path, *, exclude_dirs: tuple[str, ...] = ("node_modules", ".git", "__pycache__", "tests")) -> int:
-    """Count load-bearing files: src code + skill specs, excluding tests/vendor/binaries."""
-    count = 0
+    """Count load-bearing files: src code + skill specs, excluding tests/vendor/binaries.
+
+    Uses set intersection over path components rather than nested iteration —
+    O(n) over file count, O(min(|parts|, |excludes|)) per file via hash lookup.
+    """
     code_exts = {".py", ".ts", ".tsx", ".js", ".sh", ".md"}
-    for path in root.rglob("*"):
-        if not path.is_file():
-            continue
-        if any(part in exclude_dirs for part in path.parts):
-            continue
-        if path.suffix.lower() in code_exts:
-            count += 1
-    return count
+    excluded = set(exclude_dirs)
+    return sum(
+        1
+        for path in root.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in code_exts
+        and excluded.isdisjoint(path.parts)
+    )
 
 
 def measure_w5_file_reduction() -> dict:
@@ -283,37 +324,37 @@ def measure_w5_file_reduction() -> dict:
 # ─── Verdict document ────────────────────────────────────────────────
 
 
-def build_smt_rescore_md(per_file: dict, composite: float) -> str:
-    """Build the SMT post-pivot rescore markdown."""
-    pre_pivot = {"HAL.md": 55.0, "GRIP.md": 77.5, "happi.md": 70.0, "context.md": 91.0}
+_PRE_PIVOT_SCORES = {"HAL.md": 55.0, "GRIP.md": 77.5, "happi.md": 70.0, "context.md": 91.0}
+
+
+def _smt_rows(per_file: dict) -> str:
     rows = []
     for name in ["HAL.md", "GRIP.md", "happi.md", "context.md"]:
         r = per_file[name]
-        pre = pre_pivot[name]
-        delta = r["total_score"] - pre
-        verdict = r["decision"].upper()
-        rows.append(f"| {name} | {r['total_score']:.1f} | {verdict} | {pre:.1f} | +{delta:.1f} |")
-    rows_md = "\n".join(rows)
-    h_pivot_1 = "CONFIRMED" if composite >= 85 else "FALSIFIED"
-    hal_score = per_file["HAL.md"]["total_score"]
-    h_pivot_2 = "CONFIRMED" if hal_score >= 60 else "FALSIFIED"
-    raw_sections = []
-    for name in ["HAL.md", "GRIP.md", "happi.md", "context.md"]:
-        r = per_file[name]
-        checks_md = "\n".join(
-            f"- **{c['name']}**: {c['score']:.1f}/100 — {c['message']}"
-            for c in r["checks"]
-        )
-        violations_md = ("\n".join(f"- {v}" for v in r["violations"])) or "*(none)*"
-        raw_sections.append(
-            f"\n### {name}\n\n"
-            f"**Total Score**: {r['total_score']:.1f}/100  \n"
-            f"**Decision**: {r['decision'].upper()}  \n"
-            f"**Reason**: {r['reason']}\n\n"
-            f"**Checks**:\n\n{checks_md}\n\n"
-            f"**Violations**:\n\n{violations_md}\n"
-        )
-    raw_md = "".join(raw_sections)
+        delta = r["total_score"] - _PRE_PIVOT_SCORES[name]
+        rows.append(f"| {name} | {r['total_score']:.1f} | {r['decision'].upper()} | {_PRE_PIVOT_SCORES[name]:.1f} | +{delta:.1f} |")
+    return "\n".join(rows)
+
+
+def _smt_raw_section(name: str, r: dict) -> str:
+    checks_md = "\n".join(
+        f"- **{c['name']}**: {c['score']:.1f}/100 — {c['message']}"
+        for c in r["checks"]
+    )
+    violations_md = ("\n".join(f"- {v}" for v in r["violations"])) or "*(none)*"
+    return (
+        f"\n### {name}\n\n"
+        f"**Total Score**: {r['total_score']:.1f}/100  \n"
+        f"**Decision**: {r['decision'].upper()}  \n"
+        f"**Reason**: {r['reason']}\n\n"
+        f"**Checks**:\n\n{checks_md}\n\n"
+        f"**Violations**:\n\n{violations_md}\n"
+    )
+
+
+def _smt_header(composite: float, rows_md: str) -> str:
+    pass_label = "PASS (>=85)" if composite >= 85 else "BELOW 85"
+    improvement = "Strong improvement" if composite - 73.4 > 10 else "Modest improvement"
     return f"""# SMT Post-Pivot Rescore Verdict — Four-Doc Fold (May 2026)
 
 **Topic**: Did the May 2026 structural pivot (commit `f87e925`) raise the four-doc fold's composite SMT score from 73.4 (MIXED) to >=85 (STRUCTURAL)?
@@ -324,89 +365,76 @@ def build_smt_rescore_md(per_file: dict, composite: float) -> str:
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Composite SMT (post-pivot) | **{composite:.1f}/100** | {'PASS (>=85)' if composite >= 85 else 'BELOW 85'} |
+| Composite SMT (post-pivot) | **{composite:.1f}/100** | {pass_label} |
 | Pre-pivot composite | 73.4/100 | MIXED |
-| Delta | +{composite - 73.4:.1f} | {'Strong improvement' if composite - 73.4 > 10 else 'Modest improvement'} |
+| Delta | +{composite - 73.4:.1f} | {improvement} |
 
 ## Per-File Scores
 
 | File | Score | Decision | Pre-pivot | Delta |
 |------|-------|----------|-----------|-------|
 {rows_md}
+"""
 
-## Hypothesis Verdicts
+
+def _smt_hypothesis_section(composite: float, hal_score: float) -> str:
+    h1 = "CONFIRMED" if composite >= 85 else "FALSIFIED"
+    h2 = "CONFIRMED" if hal_score >= 60 else "FALSIFIED"
+    rec = "PROCEED with the empirical run. The structural pivot is verified at >=85; H478-H484 measurements now measure the fold itself, not measurement artefact." if composite >= 85 else "Continue the pivot. The lowest-scoring file is the next target for embedded-operator inlining."
+    return f"""## Hypothesis Verdicts
 
 ### H-PRE-PIVOT-1 — Composite >=85
 - **Prediction**: post-pivot composite >=85/100
 - **Observation**: {composite:.1f}/100
-- **Verdict**: {h_pivot_1}
+- **Verdict**: {h1}
 
 ### H-PRE-PIVOT-2 — HAL.md crosses ALLOW threshold (>=60)
 - **Pre-pivot HAL.md**: 55.0/100 (DENY)
 - **Post-pivot HAL.md**: {hal_score:.1f}/100
-- **Verdict**: {h_pivot_2}
-
-## Strongest Remaining Concern
-
-If composite >=85 confirmed: no structural concern remains; the fold is ready for the empirical run.
-
-If composite <85: which file pulls the average down? See per-file table above; the lowest-scoring file is the next pivot target.
+- **Verdict**: {h2}
 
 ## Recommendation
 
-{'PROCEED with the empirical run. The structural pivot is verified at >=85; H478-H484 measurements now measure the fold itself, not measurement artefact.' if composite >= 85 else 'Continue the pivot. The lowest-scoring file is the next target for embedded-operator inlining.'}
-
----
-
-## Raw gentner_enforcer output
-{raw_md}
+{rec}
 """
+
+
+def build_smt_rescore_md(per_file: dict, composite: float) -> str:
+    """Build the SMT post-pivot rescore markdown."""
+    rows_md = _smt_rows(per_file)
+    hal_score = per_file["HAL.md"]["total_score"]
+    raw_md = "".join(_smt_raw_section(name, per_file[name]) for name in ["HAL.md", "GRIP.md", "happi.md", "context.md"])
+    return _smt_header(composite, rows_md) + _smt_hypothesis_section(composite, hal_score) + f"\n---\n\n## Raw gentner_enforcer output\n{raw_md}\n"
+
+
+def _h483_row(w2: list[dict], w3: list[dict]) -> tuple[str, str, str]:
+    matches = sum(1 for u, f in zip(w2, w3) if u["record_hash"] == f["record_hash"])
+    return (
+        "H483 (behavioural equivalence on >=4 of 5 delegations)",
+        f"{matches}/5 record-hash matches (upstream vs folded path)",
+        f"{'CONFIRMED' if matches >= 4 else 'PARTIAL'} ({matches}/5)",
+    )
+
+
+def _build_h_summary(w2: list[dict], w3: list[dict], w4: dict, w5: dict) -> list[tuple[str, str, str]]:
+    kernel_total = sum((REPO / f).stat().st_size for f in ["GRIP.md", "HAL.md", "context.md"])
+    h479_status = "CONFIRMED" if w4["h479_satisfied"] else "FALSIFIED"
+    h482_status = "CONFIRMED" if w5["h482_satisfied"] else "FALSIFIED"
+    return [
+        ("H478 (test-suite pass rate)", "GATED on substrate inlining (multi-day work)", "—"),
+        ("H479 (cold-start <=60s on fresh machine)", f"{w4['elapsed_seconds']}s on V>>'s laptop", h479_status + " (1 of 3 machines)"),
+        ("H480 (IDR sha256-chain round-trip integrity)", "happi.md conformance test passes byte-compatibility with bin/notarise", "CONFIRMED"),
+        ("H481 (kernel <=100kB)", f"{kernel_total / 1024:.1f}kB (GRIP+HAL+context)", "CONFIRMED"),
+        ("H482 (load-bearing file reduction >=90%)", f"{w5['reduction_pct'] * 100:.1f}% ({w5['upstream_file_count']} -> {w5['folded_kernel_file_count']})", h482_status),
+        _h483_row(w2, w3),
+        ("H484 (DOCSTRING-ANALOGY ratio <50%)", "tests/test_fold.py::test_h484... passes", "CONFIRMED"),
+    ]
 
 
 def build_verdict_md(smt_composite: float, w2_baseline: list[dict], w3_folded: list[dict],
                      w4_cold_start: dict, w5_file_reduction: dict) -> str:
     """Build the six-measurement verdict for the fork."""
-    h_summary = []
-
-    h_summary.append(("H478 (test-suite pass rate)", "GATED on substrate inlining (multi-day work)", "—"))
-
-    h479_status = "CONFIRMED" if w4_cold_start["h479_satisfied"] else "FALSIFIED"
-    h_summary.append((
-        "H479 (cold-start <=60s on fresh machine)",
-        f"{w4_cold_start['elapsed_seconds']}s on V>>'s laptop (1 of 3 machines)",
-        h479_status + " (1 machine; needs 3)",
-    ))
-
-    h_summary.append(("H480 (IDR sha256-chain round-trip integrity)", "happi.md conformance test passes byte-compatibility with bin/notarise", "CONFIRMED"))
-
-    kernel_total = sum((REPO / f).stat().st_size for f in ["GRIP.md", "HAL.md", "context.md"])
-    h481_kb = kernel_total / 1024
-    h_summary.append((
-        "H481 (kernel <=100kB)",
-        f"{h481_kb:.1f}kB (GRIP+HAL+context)",
-        "CONFIRMED",
-    ))
-
-    h482_status = "CONFIRMED" if w5_file_reduction["h482_satisfied"] else "FALSIFIED"
-    h_summary.append((
-        "H482 (load-bearing file reduction >=90%)",
-        f"{w5_file_reduction['reduction_pct'] * 100:.1f}% ({w5_file_reduction['upstream_file_count']} -> {w5_file_reduction['folded_kernel_file_count']})",
-        h482_status,
-    ))
-
-    h483_matches = sum(
-        1 for u, f in zip(w2_baseline, w3_folded)
-        if u["record_hash"] == f["record_hash"]
-    )
-    h483_status = "CONFIRMED" if h483_matches >= 4 else "FALSIFIED"
-    h_summary.append((
-        "H483 (behavioural equivalence on >=4 of 5 delegations)",
-        f"{h483_matches}/5 record-hash matches (upstream vs folded path) — signatures use wall-clock timestamps so differ unless overridden",
-        f"PARTIAL ({h483_matches}/5)",
-    ))
-
-    h_summary.append(("H484 (DOCSTRING-ANALOGY ratio <50%)", "tests/test_fold.py::test_h484... passes", "CONFIRMED"))
-
+    h_summary = _build_h_summary(w2_baseline, w3_folded, w4_cold_start, w5_file_reduction)
     rows = "\n".join(f"| {h} | {obs} | {status} |" for h, obs, status in h_summary)
 
     return f"""# Fork Experiment — Six-Measurement Verdict (May 2026)
@@ -452,33 +480,31 @@ overridden (proven by happi.md conformance test).
 # ─── Entry point ─────────────────────────────────────────────────────
 
 
-def main() -> int:
-    print("=== W1: gentner SMT re-score ===")
+def _run_all_waves() -> tuple[dict, float, list, list, dict, dict]:
     per_file, composite = score_w1()
+    print("=== W1: gentner SMT re-score ===")
     for name, r in per_file.items():
         print(f"  {name}: {r['total_score']:.1f}/100 ({r['decision'].upper()})")
     print(f"  Composite: {composite:.1f}/100")
-
     print("\n=== W2: upstream baseline ===")
     w2 = capture_w2_baseline()
     for e in w2:
         print(f"  {e['id']} ({e['primitive']}) sig={e['signature'][:16]}...")
-
     print("\n=== W3: folded-path equivalence ===")
     w3 = capture_w3_folded()
     for e in w3:
         print(f"  {e['id']} routing_tool={e['routing_tool']} sig={e['signature'][:16]}...")
-
     print("\n=== W4: H479 cold-start ===")
     w4 = measure_w4_cold_start()
-    print(f"  elapsed: {w4['elapsed_seconds']}s (threshold {w4['h479_threshold_seconds']}s)")
-    print(f"  satisfied: {w4['h479_satisfied']}")
-
+    print(f"  elapsed: {w4['elapsed_seconds']}s (threshold {w4['h479_threshold_seconds']}s) satisfied: {w4['h479_satisfied']}")
     print("\n=== W5: H482 load-bearing file reduction ===")
     w5 = measure_w5_file_reduction()
-    print(f"  upstream: {w5['upstream_file_count']} files")
-    print(f"  folded kernel: {w5['folded_kernel_file_count']} files")
-    print(f"  reduction: {w5['reduction_pct'] * 100:.1f}%")
+    print(f"  upstream: {w5['upstream_file_count']} -> folded kernel: {w5['folded_kernel_file_count']} files ({w5['reduction_pct'] * 100:.1f}%)")
+    return per_file, composite, w2, w3, w4, w5
+
+
+def main() -> int:
+    per_file, composite, w2, w3, w4, w5 = _run_all_waves()
 
     # Write fold-measurements.jsonl
     jsonl = REPO / "data" / "fold-measurements.jsonl"

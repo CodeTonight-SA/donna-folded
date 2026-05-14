@@ -9,11 +9,11 @@ SMT composite (post-pivot): **86.0/100**
 | Hypothesis | Observation | Status |
 |-----------|-------------|--------|
 | H478 (test-suite pass rate) | GATED on substrate inlining (multi-day work) | — |
-| H479 (cold-start <=60s on fresh machine) | 0.176s on V>>'s laptop (1 of 3 machines) | CONFIRMED (1 machine; needs 3) |
+| H479 (cold-start <=60s on fresh machine) | 0.164s on V>>'s laptop | CONFIRMED (1 of 3 machines) |
 | H480 (IDR sha256-chain round-trip integrity) | happi.md conformance test passes byte-compatibility with bin/notarise | CONFIRMED |
 | H481 (kernel <=100kB) | 28.3kB (GRIP+HAL+context) | CONFIRMED |
-| H482 (load-bearing file reduction >=90%) | 93.9% (82 -> 5) | CONFIRMED |
-| H483 (behavioural equivalence on >=4 of 5 delegations) | 2/5 record-hash matches (upstream vs folded path) — signatures use wall-clock timestamps so differ unless overridden | PARTIAL (2/5) |
+| H482 (load-bearing file reduction >=90%) | 94.0% (83 -> 5) | CONFIRMED |
+| H483 (behavioural equivalence on >=4 of 5 delegations) | 5/5 record-hash matches (upstream vs folded path) | CONFIRMED (5/5) |
 | H484 (DOCSTRING-ANALOGY ratio <50%) | tests/test_fold.py::test_h484... passes | CONFIRMED |
 
 ## What this verdict means
