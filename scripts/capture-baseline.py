@@ -58,13 +58,22 @@ def _sign_entry(entry: dict, previous_hash: str, env: dict) -> subprocess.Comple
     )
 
 
-def _parse_sign_output(entry_id: str, stdout: str) -> tuple[str, dict] | None:
-    lines = stdout.split("\n", 1)
-    hash_line = lines[0].strip()
-    if not hash_line.startswith("hash:"):
-        print(f"ERROR: unexpected hash line for {entry_id}: {hash_line!r}")
+def _parse_sign_output(entry_id: str, stdout: str, stderr: str) -> tuple[str, dict] | None:
+    """bin/notarise emits JSON to stdout and the 'hash:' line to stderr."""
+    record_hash = ""
+    for line in stderr.splitlines():
+        if line.startswith("hash:"):
+            record_hash = line.split(":", 1)[1].strip()
+            break
+    if not record_hash:
+        print(f"ERROR: no hash line on stderr for {entry_id}: {stderr!r}")
         return None
-    return hash_line.split(":", 1)[1].strip(), json.loads(lines[1])
+    try:
+        record = json.loads(stdout)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: stdout not JSON for {entry_id}: {e} stdout={stdout!r}")
+        return None
+    return record_hash, record
 
 
 def _build_baseline_entry(entry: dict, previous_hash: str, record_hash: str, record: dict) -> dict:
@@ -100,7 +109,7 @@ def _capture_all(corpus: dict, env: dict) -> tuple[list[dict] | None, int]:
         if result.returncode != 0:
             print(f"ERROR signing {entry['id']}: {result.stderr}", file=sys.stderr)
             return None, 2
-        parsed = _parse_sign_output(entry["id"], result.stdout)
+        parsed = _parse_sign_output(entry["id"], result.stdout, result.stderr)
         if parsed is None:
             return None, 3
         record_hash, record = parsed
