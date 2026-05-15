@@ -1,0 +1,37 @@
+H483 Hardening Proof — NOTARISE_TIMESTAMP env-var override
+Generated: 2026-05-15
+
+PATCH APPLIED: bin/notarise cmd_sign — 4-line additive override
+  fixed_ts = os.environ.get("NOTARISE_TIMESTAMP")
+  timestamp=fixed_ts or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+os import: already present (line 21). No new dependency.
+
+---
+
+TEST 1 PASS (delayed determinism): 5fbcbec409b2b522976b4e91ddd2f9173a9efa76c19e66e956a93af03520ea72
+  NOTARISE_TIMESTAMP="2026-05-15T07:00:00Z"
+  Same input, 4-second sleep between runs -> IDENTICAL signature.
+  Proves: env-var override is deterministic regardless of wall-clock.
+
+TEST 2 PASS (backward compat — wall-clock variation preserved):
+  sig3=0314594193f8d65b89aefad92120dd4f468f5e455c46c45575e6f2552d77d8f3
+  sig4=6122e59422ac95b436f7e09c14878e53cd5f05dd887039351c02a0ce32213e70
+  NOTARISE_TIMESTAMP unset, 2-second sleep -> DIFFERENT signatures.
+  Proves: prior behaviour preserved exactly when env var is absent.
+
+TEST 3 PASS (full fold-measurements run with env var):
+  NOTARISE_TIMESTAMP="2026-05-15T07:00:00Z"
+  W2 upstream baseline vs W3 folded-path equivalence:
+    D01: MATCH  sig=61900bb4a49eba70...
+    D02: MATCH  sig=59a63d6f94ac959e...
+    D03: MATCH  sig=1f296b019ff9f226...
+    D04: MATCH  sig=b9f5a85b3143051a...
+    D05: MATCH  sig=49c91f7cf8e499aa...
+
+H483 record-hash + signature matches: 5/5
+h483_robust_under_env_override: True
+
+---
+
+VERDICT: H483 upgrades from CONFIRMED * (timestamp-coincidence caveat)
+to CONFIRMED (robust — determinism proven under deliberate inter-run delay).

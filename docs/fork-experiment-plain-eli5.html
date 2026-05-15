@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Fold — Plain Language + ELI5</title>
+<style>
+  @page { size: A4; margin: 0; background: #0d1117; }
+  @page :first { margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 22mm 20mm;
+    background: #0d1117;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+  .page::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-image:
+      linear-gradient(rgba(184, 194, 204, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(184, 194, 204, 0.07) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .content { position: relative; z-index: 1; }
+
+  /* Cover */
+  .cover { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 253mm; }
+  .cover .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10pt; letter-spacing: 0.32em; text-transform: uppercase;
+    color: #b8c2cc; margin-bottom: 14mm;
+  }
+  .cover h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 300; font-size: 60pt; line-height: 1.02;
+    letter-spacing: -0.04em; color: #e6edf3; margin-bottom: 8mm;
+  }
+  .cover h1 em { color: #d4a017; font-style: italic; font-weight: 400; }
+  .cover .tag {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18pt; color: #b8c2cc; line-height: 1.4;
+    max-width: 140mm; margin-bottom: 18mm;
+  }
+  .cover .meta {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9.5pt; color: #8a93a0;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    border-top: 1px dashed rgba(184, 194, 204, 0.22);
+    padding-top: 6mm; width: 100%;
+  }
+  .cover .meta strong { color: #d4a017; }
+
+  /* Section pages */
+  .section-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9pt; letter-spacing: 0.32em; text-transform: uppercase;
+    color: #d4a017; margin-bottom: 4mm;
+  }
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400; font-size: 30pt; line-height: 1.08;
+    color: #e6edf3; letter-spacing: -0.025em; margin-bottom: 9mm;
+  }
+  h2 em { color: #d4a017; font-style: italic; }
+  h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500; font-size: 15pt; color: #f0c441;
+    margin-top: 9mm; margin-bottom: 3mm; letter-spacing: -0.01em;
+  }
+  p {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 12pt; line-height: 1.62; color: #c8d1da;
+    margin-bottom: 5mm; max-width: 170mm;
+  }
+  p strong { color: #e6edf3; font-weight: 500; }
+  p em { color: #b8c2cc; font-style: italic; }
+  ul { margin: 4mm 0 6mm 0; padding-left: 6mm; list-style: none; }
+  ul li {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 12pt; line-height: 1.55; color: #c8d1da;
+    margin-bottom: 2.5mm; position: relative; padding-left: 7mm;
+  }
+  ul li::before {
+    content: "—"; color: #d4a017; position: absolute; left: 0; top: 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .block { page-break-inside: avoid; margin-bottom: 8mm; }
+  h2, h3 { page-break-after: avoid; }
+
+  /* Score row */
+  .score-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 4mm; margin: 8mm 0; page-break-inside: avoid;
+  }
+  .score {
+    text-align: center; padding: 6mm 3mm;
+    border: 1px solid rgba(184, 194, 204, 0.18); border-radius: 2mm;
+  }
+  .score .num {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 28pt; color: #d4a017; line-height: 1; font-weight: 400;
+  }
+  .score .lbl {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8pt; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #8a93a0; margin-top: 2mm;
+  }
+
+  /* Quote */
+  blockquote.pull {
+    border-left: 2px solid #d4a017;
+    padding: 4mm 0 4mm 8mm; margin: 6mm 0;
+    page-break-inside: avoid;
+  }
+  blockquote.pull p {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16pt; line-height: 1.4;
+    font-style: italic; color: #e6edf3; margin-bottom: 0;
+  }
+
+  /* Closing seal */
+  .seal {
+    margin-top: auto;
+    padding-top: 14mm;
+    border-top: 1px dashed rgba(184, 194, 204, 0.22);
+    text-align: center;
+  }
+  .seal .glyph {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 16pt; color: #d4a017;
+    letter-spacing: 0.3em; margin-bottom: 3mm;
+  }
+  .seal .signature {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9pt; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #8a93a0;
+  }
+  .seal .signature strong { color: #d4a017; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<section class="page">
+  <div class="content cover">
+    <div class="eyebrow">May 2026 · Plain Language &amp; ELI5</div>
+    <h1>The <em>Fold.</em></h1>
+    <p class="tag">
+      What we tried. What worked. What didn't. In English first, then in
+      kid English. No metric codes, no insider jargon.
+    </p>
+    <div class="meta">
+      Drawn by GRIP · for <strong>V&gt;&gt;</strong> · co-reviewed with Craig ·
+      a companion to the academic whitepaper
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAIN LANGUAGE ============ -->
+<section class="page">
+  <div class="content">
+    <div class="section-label">§01 · Plain Language</div>
+    <h2>What we did and what we found.</h2>
+
+    <div class="block">
+      <p>
+        We took DONNA — a tool that records every AI-delegated decision a
+        lawyer makes — and tried to write it down as <strong>four short
+        Markdown files</strong>. Each file is simultaneously a readable
+        document, a runnable Bash script, and a tiny Python program. The bet:
+        a fresh machine should reach the same operational shape with no
+        installation step.
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>Seven predictions, written down first</h3>
+      <ul>
+        <li>Tests still pass</li>
+        <li>Cold start under one minute</li>
+        <li>Audit chain byte-identical between original and fold</li>
+        <li>Four files under 100 kilobytes combined</li>
+        <li>Load-bearing file count drops 90% or more</li>
+        <li>Five delegations produce identical signatures</li>
+        <li>The files actually <em>do</em> — not just describe</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>What the measurements said</h3>
+      <div class="score-row">
+        <div class="score">
+          <div class="num">6 / 7</div>
+          <div class="lbl">confirmed</div>
+        </div>
+        <div class="score">
+          <div class="num">28 kB</div>
+          <div class="lbl">kernel total</div>
+        </div>
+        <div class="score">
+          <div class="num">94%</div>
+          <div class="lbl">file reduction</div>
+        </div>
+      </div>
+      <p>
+        Cold start under a fifth of a second. Audit chain byte-identical at
+        runtime. The four files compose into a working DONNA invocation:
+        route a request, sign it, verify the chain — no installation step.
+        The prior caveat (one prediction passed because timing happened to
+        align) has been hardened with a four-line additive patch that lets
+        the timing tool accept a fixed timestamp. Three falsification tests
+        confirm. One prediction is still parked on multi-day surgery; one
+        still needs two more machines.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ELI5 ============ -->
+<section class="page">
+  <div class="content">
+    <div class="section-label">§02 · ELI5</div>
+    <h2>The same story, in kid English.</h2>
+
+    <div class="block">
+      <p>
+        Imagine you have a robot helper at a law firm. When the lawyer says
+        <em>"send Sarah the contract and ask her to redline it by Tuesday,"</em>
+        the robot sends the email, watches for the reply, and writes a tiny
+        signed note that says <em>"on this day, at this time, the lawyer asked
+        for this, and Sarah was told."</em> The note is sealed so nobody can
+        change it later. Every note is connected to the one before it like
+        links in a chain.
+      </p>
+    </div>
+
+    <div class="block">
+      <p>
+        That robot is called <strong>DONNA</strong>. The big question we asked
+        was: <em>can we write the robot down as four very short files, and
+        will it still work?</em>
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>The four files</h3>
+      <ul>
+        <li><strong>The discipline file</strong> — how the robot thinks</li>
+        <li><strong>The mouth file</strong> — how it picks the right tool for the job</li>
+        <li><strong>The receipt file</strong> — how it seals each decision</li>
+        <li><strong>The you file</strong> — your firm's preferences and rules</li>
+      </ul>
+      <p>
+        We tried this on the real robot's actual code. We wrote seven things
+        we expected to happen, then ran the experiment. Six of the seven
+        happened the way we predicted. One we couldn't check yet because it
+        needs a bigger piece of work first.
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>The honest bits</h3>
+      <ul>
+        <li>The "lucky timing" caveat is now fixed. A tiny four-line patch lets the timing tool accept a fixed time, and three follow-up tests prove the result is no longer coincidence.</li>
+        <li>One result was measured on one computer. We still need to try it on two more.</li>
+        <li>One thing we couldn't measure at all yet — it depends on doing the bigger surgery first.</li>
+      </ul>
+    </div>
+
+    <blockquote class="pull">
+      <p>If you cannot say what would make this wrong, you have not said anything.</p>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ WHAT'S NEXT ============ -->
+<section class="page">
+  <div class="content">
+    <div class="section-label">§03 · What's next</div>
+    <h2>What we'd do tomorrow if asked.</h2>
+
+    <div class="block">
+      <p>
+        The fork experiment was the first beat. The audit trail is on disk
+        and on GitHub. The science survives because the predictions were
+        written down first.
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>Concrete next steps</h3>
+      <ul>
+        <li><em>(done — commit <code>602d4d6</code>)</em> Apply the small additive patch to the upstream timing tool so the signature-match result is robust under any speed of run</li>
+        <li>Run the cold-start test on a Linux machine and a fresh-install Mac to triangulate the result</li>
+        <li>Do the multi-day surgery: extract the original code into the fold and delete what the fold replaces — this unlocks the seventh prediction</li>
+        <li>Invite the AI Craftspeople Guild to reproduce the experiment independently</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>The bet, one sentence</h3>
+      <blockquote class="pull">
+        <p>The brain is replaceable. The harness is replaceable. The audit chain is yours.</p>
+      </blockquote>
+    </div>
+
+    <div class="block">
+      <p>
+        That is what the fold is for. The four files travel. Drop them onto
+        any AI tool a year from now and the discipline travels with them. The
+        firm's playbook, the signing key, the chain — operator state, not
+        vendor state.
+      </p>
+    </div>
+
+    <div class="seal">
+      <div class="glyph">⛓ ⟿ ∞</div>
+      <div class="signature">
+        Drawn by GRIP · for <strong>V&gt;&gt;</strong> · May 2026 ·
+        rhythm over rush · deeds, not words
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

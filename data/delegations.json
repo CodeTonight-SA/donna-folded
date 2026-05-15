@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "experiment": "donna-folded H483 falsification corpus",
+  "hypothesis": "H483: donna-folded fork preserves behavioural equivalence on >=4 of 5 representative DONNA delegations",
+  "deadline": "2026-06-13",
+  "coverage_strategy": "one_per_verb",
+  "equivalence_criterion": {
+    "kind": "idr_sha256_chain_match",
+    "description": "For each delegation: sign via bin/notarise on upstream HEAD and on the folded path under identical inputs. Compare the resulting IDR record bytes (canonical JSON) and the HMAC-SHA256 signature. Pass = byte-identical match. The 5 form a chain: D02.previous_hash = sha256(D01) and so on.",
+    "pass_threshold": "4_of_5_or_better"
+  },
+  "fixed_test_parameters": {
+    "signer": "donna-bot",
+    "confidence": 0.92,
+    "notarise_key_env": "DONNA_NOTARISE_KEY",
+    "notarise_key_value_for_test": "donna-public-demo-key-2026-05-08",
+    "timestamp_ns_anchor": 1715769600000000000,
+    "timestamp_ns_increment": 1000000,
+    "decision_id_strategy": "deterministic_hash_of_intent_plus_offset",
+    "previous_hash_chain": "genesis_then_sequential",
+    "protocol_version": "happi/1.1",
+    "signature_algorithm": "HMAC-SHA256"
+  },
+  "delegations": [
+    {
+      "id": "D01",
+      "primitive": "delegation",
+      "label": "multi-party intent with cc + deadline",
+      "intent": "Send Sarah the M&A precedent we used for Dubrovnik, ask her to redline by Tuesday, copy Marcus when she replies.",
+      "expected_extracted_fields": {
+        "recipient_primary": "Sarah",
+        "recipient_cc": ["Marcus"],
+        "referenced_matter": "Dubrovnik M&A precedent",
+        "deadline": "Tuesday",
+        "action": "redline"
+      },
+      "previous_hash_source": "GENESIS_PREVIOUS_HASH",
+      "timestamp_ns_offset": 0
+    },
+    {
+      "id": "D02",
+      "primitive": "assignment",
+      "label": "single recipient with verb and deadline",
+      "intent": "Mike, draft the response brief by Friday.",
+      "expected_extracted_fields": {
+        "recipient_primary": "Mike",
+        "action": "draft",
+        "deliverable": "response brief",
+        "deadline": "Friday"
+      },
+      "previous_hash_source": "sha256(D01)",
+      "timestamp_ns_offset": 1000000
+    },
+    {
+      "id": "D03",
+      "primitive": "time_entry",
+      "label": "duration logged against a matter",
+      "intent": "Just spent ninety minutes on the Smith motion.",
+      "expected_extracted_fields": {
+        "matter": "Smith motion",
+        "duration_minutes": 90,
+        "category": "Drafting"
+      },
+      "previous_hash_source": "sha256(D02)",
+      "timestamp_ns_offset": 2000000
+    },
+    {
+      "id": "D04",
+      "primitive": "query",
+      "label": "replay a chain segment",
+      "intent": "Show me what I delegated this week.",
+      "expected_extracted_fields": {
+        "query_type": "replay",
+        "time_window": "this week",
+        "scope": "delegations"
+      },
+      "previous_hash_source": "sha256(D03)",
+      "timestamp_ns_offset": 3000000
+    },
+    {
+      "id": "D05",
+      "primitive": "export",
+      "label": "regulator-ready packet",
+      "intent": "Export today as a regulator packet.",
+      "expected_extracted_fields": {
+        "export_format": "regulator_packet",
+        "time_window": "today",
+        "output_formats": ["json", "csv"]
+      },
+      "previous_hash_source": "sha256(D04)",
+      "timestamp_ns_offset": 4000000
+    }
+  ],
+  "execution_protocol": {
+    "step_1": "Export DONNA_NOTARISE_KEY=donna-public-demo-key-2026-05-08 in both environments (upstream + folded)",
+    "step_2": "For each delegation D01..D05 in order, call bin/notarise sign with intent + fixed timestamp + fixed signer + fixed confidence + computed previous_hash",
+    "step_3": "Capture the canonical JSON output + signature for each",
+    "step_4": "Compare upstream output vs folded output byte-by-byte for each of the 5",
+    "step_5": "Tally matches. >=4 -> H483 confirmed. <=3 -> H483 falsified.",
+    "step_6": "Emit a single JSON line per delegation to data/fold-measurements.jsonl with {id, primitive, upstream_sig, folded_sig, match}"
+  },
+  "anti_goodhart_notes": {
+    "why_each_primitive_matters": "Picking 5 variations of the same verb would fail to exercise routing across DONNA's surface. One-per-verb forces the fold to preserve all five code paths.",
+    "why_sha256_match": "Semantic equivalence is judgable; signature match is computable. The test cannot drift to pass while the underlying logic differs.",
+    "why_fixed_inputs": "Timestamps, decision_ids, and previous_hashes are non-deterministic in production. Fixing them is what makes byte-equivalent comparison possible. The test measures the fold's correctness, not DONNA's runtime randomness.",
+    "what_could_still_go_wrong": "If bin/notarise produces different output under different Python versions (e.g. dict ordering, locale-aware string handling), the test fails for reasons unrelated to the fold. Mitigation: pin Python 3.10+ in both environments and use canonical JSON serialisation."
+  },
+  "license": "AGPL-3.0",
+  "author_alias": "architext1",
+  "created": "May 2026"
+}
