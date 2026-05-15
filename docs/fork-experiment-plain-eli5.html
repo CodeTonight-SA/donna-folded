@@ -220,9 +220,11 @@
         Cold start under a fifth of a second. Audit chain byte-identical at
         runtime. The four files compose into a working DONNA invocation:
         route a request, sign it, verify the chain — no installation step.
-        One prediction is parked (the multi-day surgery). One passed with a
-        timing caveat. One needs two more machines to triangulate. The
-        honest version is on the next page.
+        The prior caveat (one prediction passed because timing happened to
+        align) has been hardened with a four-line additive patch that lets
+        the timing tool accept a fixed timestamp. Three falsification tests
+        confirm. One prediction is still parked on multi-day surgery; one
+        still needs two more machines.
       </p>
     </div>
   </div>
@@ -273,8 +275,8 @@
     <div class="block">
       <h3>The honest bits</h3>
       <ul>
-        <li>One of the six "passed" results was a bit lucky — the timing happened to align. We need to fix the timing tool to make it solid.</li>
-        <li>One result was measured on one computer. We need to try it on two more.</li>
+        <li>The "lucky timing" caveat is now fixed. A tiny four-line patch lets the timing tool accept a fixed time, and three follow-up tests prove the result is no longer coincidence.</li>
+        <li>One result was measured on one computer. We still need to try it on two more.</li>
         <li>One thing we couldn't measure at all yet — it depends on doing the bigger surgery first.</li>
       </ul>
     </div>
@@ -302,7 +304,7 @@
     <div class="block">
       <h3>Concrete next steps</h3>
       <ul>
-        <li>Apply the small additive patch to the upstream timing tool so the signature-match result is robust under any speed of run</li>
+        <li><em>(done — commit <code>602d4d6</code>)</em> Apply the small additive patch to the upstream timing tool so the signature-match result is robust under any speed of run</li>
         <li>Run the cold-start test on a Linux machine and a fresh-install Mac to triangulate the result</li>
         <li>Do the multi-day surgery: extract the original code into the fold and delete what the fold replaces — this unlocks the seventh prediction</li>
         <li>Invite the AI Craftspeople Guild to reproduce the experiment independently</li>

@@ -376,8 +376,8 @@
         </tr>
         <tr>
           <td class="hyp">H483</td>
-          <td class="status-partial">CONFIRMED *</td>
-          <td>5/5 record-hash + signature matches (timestamp-coincidence caveat)</td>
+          <td class="status-ok">CONFIRMED</td>
+          <td>5/5 record-hash + signature matches; robust under <code>NOTARISE_TIMESTAMP</code></td>
         </tr>
         <tr>
           <td class="hyp">H484</td>
@@ -434,17 +434,21 @@
     <h2>Where the verdict holds. Where it doesn't yet.</h2>
 
     <div class="block">
-      <h3>Honest limitation 1 — H483 robustness</h3>
+      <h3>H483 hardening — timing-coincidence resolved</h3>
       <p>
-        The 5/5 record-hash + signature match holds because both runs
-        execute within the same wall-clock second, so the non-deterministic
-        <code>timestamp</code> field coincides. Mechanically true but
-        brittle: a slower runner or higher load splits the runs across
-        seconds and signatures differ. The proper hardening is an additive
-        <code>NOTARISE_TIMESTAMP</code> env-var override in
-        <code>bin/notarise</code>, parked due to an unrelated quality-gate
-        false-positive that blocked the Edit during the autonomous loop.
-        When the override lands, H483 5/5 becomes robust under any timing.
+        The initial 5/5 record-hash and signature match held because both
+        runs landed in the same wall-clock second, so the
+        non-deterministic <code>timestamp</code> field coincided. That was
+        flagged in the first iteration of this whitepaper as the strongest
+        remaining caveat. The fix shipped as commit <code>602d4d6</code>:
+        a four-line additive patch to <code>bin/notarise</code> that reads
+        <code>NOTARISE_TIMESTAMP</code> from the environment and falls back
+        to wall-clock when unset. Three falsification tests pass —
+        determinism across a 4-second delay, backward compatibility
+        without the env var, and a full <code>scripts/run-fold-measurements.py</code>
+        run with the env var set producing 5/5 matches. Proof captured in
+        <code>data/h483-hardening-proof.txt</code>. H483 status promotes
+        from <em>CONFIRMED with caveat</em> to <em>CONFIRMED</em>.
       </p>
     </div>
 
@@ -506,7 +510,7 @@
     <div class="block">
       <h3>Future work</h3>
       <ul>
-        <li>Ship the additive <code>NOTARISE_TIMESTAMP</code> patch for robust H483</li>
+        <li><em>(landed in commit <code>602d4d6</code>)</em> <code>NOTARISE_TIMESTAMP</code> additive patch — H483 now robust</li>
         <li>Triangulate H479 on Linux x86 and a fresh-install macOS</li>
         <li>Execute the substrate-inlining wave to resolve H478 + tighten H482</li>
         <li>Re-run SMT against a heterogeneous proposal to test for Goodhart-style score collapse</li>
