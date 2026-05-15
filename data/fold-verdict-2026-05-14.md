@@ -9,7 +9,7 @@ SMT composite (post-pivot): **86.0/100**
 | Hypothesis | Observation | Status |
 |-----------|-------------|--------|
 | H478 (test-suite pass rate) | GATED on substrate inlining (multi-day work) | — |
-| H479 (cold-start <=60s on fresh machine) | 0.164s on V>>'s laptop | CONFIRMED (1 of 3 machines) |
+| H479 (cold-start <=60s on fresh machine) | 0.176s on V>>'s laptop | CONFIRMED (1 of 3 machines) |
 | H480 (IDR sha256-chain round-trip integrity) | happi.md conformance test passes byte-compatibility with bin/notarise | CONFIRMED |
 | H481 (kernel <=100kB) | 28.3kB (GRIP+HAL+context) | CONFIRMED |
 | H482 (load-bearing file reduction >=90%) | 94.0% (83 -> 5) | CONFIRMED |

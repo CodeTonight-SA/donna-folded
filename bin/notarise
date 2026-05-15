@@ -180,9 +180,12 @@ def parse_probat(path: str) -> List[IDR]:
 
 # ─── CLI ─────────────────────────────────────────────────────────────
 def cmd_sign(args: argparse.Namespace) -> int:
+    # Additive: $NOTARISE_TIMESTAMP overrides wall-clock for test determinism.
+    # Unset (the default) preserves prior behaviour exactly.
+    fixed_ts = os.environ.get("NOTARISE_TIMESTAMP")
     rec = IDR(
         decision_id=args.decision_id or f"idr_{int(time.time()*1e9)}",
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        timestamp=fixed_ts or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         protocol=PROTOCOL_VERSION,
         intent=args.intent,
         signer=args.signer,
