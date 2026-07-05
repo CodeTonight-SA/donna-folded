@@ -3,6 +3,21 @@
 All notable changes to DONNA are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **`LEGAL-PROVENANCE.md`** — the citation leg of the moat, in plain English:
+  the two-layer approach (a deterministic floor that proves a quote is *real*,
+  plus an advisory external-model council that judges whether the real quote
+  *supports* its claim), proven live on the real *Donoghue v Stevenson* [1932]
+  judgment (a memo where every quote is verbatim-real yet two are cited for
+  claims they refute — caught by three independent external models).
+- **README — "The moat — cryptographic causation"**: names the three legs
+  (decision / convergence / citation → `PROBAT.md` / `FOLD.md` /
+  `LEGAL-PROVENANCE.md`) and links the open reference implementation
+  **[github.com/CodeTonight-SA/grasp](https://github.com/CodeTonight-SA/grasp)**
+  (AGPL-3.0), now public.
+
 ## [0.9.0] — 2026-05-09
 
 Public-launch surface: DONNA backronym, Munir framing, IDR notariser, roadmap, OSS hygiene.

@@ -37,6 +37,16 @@ After *Munir*, the IDR is the audit-evidentiary backbone: every delegated decisi
 
 This is not transcription. We do not store voice notes for later interpretation. *Speech is a means, not the product.*
 
+### The moat — cryptographic causation
+
+The audit chain is the moat; the model is replaceable. Concretely, the moat is **cryptographic causation**: tamper-evident, replayable records of *what* DONNA decided, *what it believed when it decided*, and that *every outward citation is real*. Three legs, all in this repository:
+
+- **Decision** — signed, hash-chained IDRs. See [`PROBAT.md`](PROBAT.md) — this repository notarises itself; verify any entry locally with [`bin/notarise`](bin/notarise).
+- **Convergence** — the Banach fixed-point kernel every DONNA loop reduces to. See [`FOLD.md`](FOLD.md).
+- **Citation** — proof that every quoted authority is *real* (a deterministic floor: a fabricated quote is refused, "never file a red") and *reviewed for relevance* by independent external models. See **[`LEGAL-PROVENANCE.md`](LEGAL-PROVENANCE.md)**, proven live on the real *Donoghue v Stevenson* [1932] judgment.
+
+The open, standalone reference implementation of the citation and decision legs is **[github.com/CodeTonight-SA/grasp](https://github.com/CodeTonight-SA/grasp)** (AGPL-3.0) — `cite_verify`, `prove_it`, `legal_receipt`, `idr`. The provability is a property of the substrate, not of any one model.
+
 The acronym is the brand. Each letter carries its own meaning:
 
 | Letter | Word | What it means |
